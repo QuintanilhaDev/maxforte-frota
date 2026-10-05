@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Max Forte · Painel de Frota</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<canvas id="bg"></canvas>
+
+<main id="login">
+  <form id="lf" class="card" autocomplete="on">
+    <div class="orbspin"></div>
+    <div class="cardin">
+      <div class="logo">MAX<span>FORTE</span></div>
+      <p class="sub">Painel administrativo de frota</p>
+      <label>Usuário<input id="u" autocomplete="username" autocapitalize="none" required></label>
+      <label>Senha<input id="p" type="password" autocomplete="current-password" required></label>
+      <button class="btn pri" id="lb">Entrar</button>
+      <p id="lerr" class="err"></p>
+    </div>
+  </form>
+  <form id="sf" class="card" autocomplete="off" hidden>
+    <div class="logo">MAX<span>FORTE</span></div>
+    <p class="sub">Primeiro acesso: crie o usuário <b>master</b></p>
+    <label>Seu nome<input id="sn" placeholder="Ex.: Mateus" required></label>
+    <label>Senha do master (mín. 8)<input id="sp" type="password" autocomplete="new-password" required></label>
+    <label>Repita a senha<input id="sp2" type="password" autocomplete="new-password" required></label>
+    <label id="scw" hidden>Código de instalação<input id="sc" autocomplete="off"></label>
+    <button class="btn pri" id="sb">Criar master</button>
+    <p id="serr" class="err"></p>
+  </form>
+</main>
+
+<div id="app" hidden>
+  <header>
+    <div class="logo sm">MAX<span>FORTE</span></div>
+    <nav id="nav"></nav>
+    <div class="who"><span id="whoName"></span><button class="btn ghost" id="out">Sair</button></div>
+  </header>
+  <section id="view"></section>
+</div>
+
+<div id="mod" class="modal" hidden><div class="mbox" id="mbox"></div></div>
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="bg.js"></script>
+<script src="holo.js"></script>
+<script src="app.js"></script>
+</body></html>

@@ -26,14 +26,51 @@ function isFem(p){
 function greet(){const h=+new Intl.DateTimeFormat('en-GB',{hour:'2-digit',hour12:false,timeZone:TZ}).format(new Date())%24;return h>=5&&h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'}
 
 /* ---------- login + orb ---------- */
-let voices=[];function loadV(){voices=speechSynthesis.getVoices()}
+// ===== Voz: escolhe a voz mais natural e feminina disponível em cada navegador =====
+let voices=[];
+function loadV(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices=[]}}
 if('speechSynthesis' in window){loadV();speechSynthesis.onvoiceschanged=loadV}
-function speak(txt){
+const MALE=/antonio|ant[oô]nio|daniel|felipe|ricardo|jorge|male\b|masculin|paulo|jo[aã]o|luis|lu[ií]s/i;
+function scoreVoice(v){
+  const n=v.name||'',l=(v.lang||'').replace('_','-').toLowerCase();
+  if(!l.startsWith('pt'))return -9999;
+  let s=0;
+  if(l==='pt-br')s+=200;else s-=100;                      // pt-PT só como último recurso
+  if(MALE.test(n))s-=1000;                                // voz feminina
+  if(/natural|neural/i.test(n))s+=300;                    // Edge: "Microsoft Francisca Online (Natural)"
+  if(/online/i.test(n))s+=60;
+  if(/premium|enhanced|aprimorad|siri/i.test(n))s+=250;   // Safari/iOS/macOS: vozes premium
+  if(/francisca/i.test(n))s+=60;if(/thalita/i.test(n))s+=50;
+  if(/luciana/i.test(n))s+=40;if(/fernanda|vit[oó]ria/i.test(n))s+=30;
+  if(/google/i.test(n))s+=140;                            // Chrome: "Google português do Brasil"
+  if(/x-.*-network|network/i.test(n))s+=80;               // Android: vozes de rede soam melhor
+  if(/maria/i.test(n))s+=10;
+  if(v.localService===false)s+=20;
+  return s;
+}
+function bestVoice(){
+  loadV();
+  return voices.map(v=>({v,s:scoreVoice(v)})).filter(x=>x.s>-5000).sort((a,b)=>b.s-a.s)[0]?.v||null;
+}
+// Chrome carrega as vozes de forma assíncrona: espera até 2s antes de desistir
+function waitVoices(){
+  return new Promise(res=>{
+    loadV();if(voices.length)return res();
+    let t=0;const i=setInterval(()=>{loadV();if(voices.length||++t>20){clearInterval(i);res()}},100);
+  });
+}
+async function speak(txt){
   if(!('speechSynthesis' in window))return;
-  const u=new SpeechSynthesisUtterance(txt);u.lang='pt-BR';
-  const pt=voices.filter(v=>/pt[-_]BR/i.test(v.lang));
-  u.voice=pt.find(v=>/female|feminina|maria|luciana|francisca|vitoria|google portugu/i.test(v.name))||pt[0]||null;
-  u.pitch=1.15;u.rate=.95;speechSynthesis.cancel();speechSynthesis.speak(u)}
+  await waitVoices();
+  const v=bestVoice();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang='pt-BR';
+  if(v){u.voice=v;u.lang=v.lang}
+  const natural=v&&/natural|neural|premium|enhanced|aprimorad|google|network/i.test(v.name);
+  // vozes naturais soam melhor sem distorção; vozes simples ganham um leve ajuste
+  u.pitch=natural?1:1.05;u.rate=natural?1:.94;u.volume=1;
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
 const showErr=m=>{$('lerr').textContent=m;$('lb').disabled=true};
 (async()=>{
   let b;
